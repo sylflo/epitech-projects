@@ -1,0 +1,7 @@
+#Compiled object files
+*.o
+
+#Binary
+bomberman
+
+

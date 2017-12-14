@@ -1,0 +1,217 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import time
+import socket
+import random
+import argparse
+from trantorien import *
+from itertools import izip, cycle
+
+def     incantation(ai):
+    ai._socket.sendall("incantation\n")
+    serverOutput = ai._socket.recv(256)
+    serverOutput = ai._socket.recv(256)
+    ai._level += 1
+
+def     avance(ai):
+    ai._socket.sendall("avance\n")
+    serverOutput = ai._socket.recv(256)
+    if serverOutput == "ok":
+        return True
+
+def     gauche(ai):
+    ai._socket.sendall("gauche\n")
+    serverOutput = ai._socket.recv(256)
+    if serverOutput == "ok":
+        return True
+
+def     droite(ai):
+    ai._socket.sendall("droite\n")
+    serverOutput = ai._socket.recv(256)
+    if serverOutput == "ok":
+        return True
+
+def     prend(ai, item):
+    print item + " prend"
+    ai._socket.sendall("prend " + item + "\n")
+    serverOutput = ai._socket.recv(256)
+    return True if serverOutput == "ok" else False
+
+def     expulse(ai):
+    ai._socket.sendall("expulse\n")
+    serverOutput = ai._socket.recv(256)
+    return True if serverOutput == "ok" else False
+
+def     pose(ai, item):
+    print item + " pose"
+    ai._socket.sendall("pose " + item + "\n")
+    serverOutput = ai._socket.recv(256)
+    return True if serverOutput == "ok" else False
+
+def     fork(ai):
+    ai._socket.sendall("fork\n")
+    serverOutput = ai._socket.recv(256)
+    if serverOutput == "ok":
+        os.system("./client -n " + ai._team + " -p " + port + " -h " + host)
+
+def     countPlayers(ai):
+    voir(ai)
+    nbPlayers = 0
+    for c in ai._voir:
+        for p in c:
+            if p == 'joueur':
+                nbPlayers += 1
+    if nbPlayers == tLevel(ai._level):
+        return True
+    else:
+        return False
+
+def     emptyPosition(ai):
+    voir(ai)
+    for c in ai._voir:
+        for i in c:
+            if i != "joueur":
+                prend(ai, i)
+
+def     inventaire(ai):
+    iterator = 0
+    ai._socket.sendall("inventaire\n")
+    serverOutput = ai._socket.recv(2048)[:-1]
+    ai._inventory = serverOutput.strip('{}').replace(',', ' ').split(' ')
+    while iterator < len(ai._inventory):
+        if iterator % 2 == 1:
+            ai._inventory[iterator] = int(ai._inventory[iterator])
+        iterator += 1
+
+def     canLevelUp(ai):
+    inventaire(ai)
+    if ai._level == 1 and ai._inventory[3] >= 1:
+        return True
+    if ai._level == 2 and ai._inventory[3] >= 2 and ai._inventory[5] >= 1 and \
+       ai._inventory[7] >= 1:
+        return True
+    if ai._level == 3 and ai._inventory[3] >= 2 and ai._inventory[7] >= 1 and \
+       ai._inventory[11] >= 2:
+        return True
+    if ai._level == 4 and ai._inventory[3] >= 1 and ai._inventory[5] >= 1 and \
+       ai._inventory[7] >= 2 and ai._inventory[11] >= 1:
+        return True
+    if ai._level == 5 and ai._inventory[3] >= 1 and ai._inventory[5] >= 2 and \
+       ai._inventory[7] >= 1 and ai._inventory[9] >= 3:
+        return True
+    if ai._level == 6 and ai._inventory[3] >= 1 and ai._inventory[5] >= 2 and \
+    ai._inventory[7] >= 3 and ai._inventory[11] >= 1:
+        return True
+    if ai._level == 7 and ai._inventory[3] >= 2 and ai._inventory[5] >= 2 and \
+       ai._inventory[7] >= 2 and ai._inventory[9] >= 2 and ai._inventory[5] >= 2 and \
+       ai._inventory[6] >= 1:
+        return True
+    return False
+
+def     goToTarget(ai):
+    closest = min(tCenterCases, key=lambda x:abs(x - ai._target))
+    position = tCenterCases.index(closest)
+    if ai._target <= tCenterCases[position] + position and \
+       ai._target >= tCenterCases[position] - position:
+        closest = tCenterCases[position]
+    elif abs(closest - ai._target) > position:
+        position += 1
+        closest = tCenterCases[position]
+    elif abs(closest - ai._target) < tCenterCases[position]:
+        position += 1
+        closest = tCenterCases[position]
+    move(ai, position)
+    if ai._target > tCenterCases[position]:
+        droite(ai)
+    elif ai._target < tCenterCases[position]:
+        gauche(ai)
+    move(ai, abs(ai._target - tCenterCases[position]))
+
+def     encryption(ai, data, key):
+    return ''.join(chr(ord(x) ^ ord(y)) for (x,y) in izip(data, cycle(key)))
+
+def     broadcast(ai, command):
+#    ai._socket.sendall(encryption(ai._messages[command], ai._team))
+    ai._socket.sendall(ai._messages[command])
+    serverOutput = ai._socket.recv(256)
+    if serverOutput == "ok":
+        return True
+
+def     voir(ai):
+    i = 0
+    ai._socket.sendall("voir\n")
+    serverOutput = ai._socket.recv(2048)[:-1]
+    ai._voir = serverOutput.strip('{}').split(',')
+    while i < len(ai._voir):
+        ai._voir[i] = ai._voir[i].strip(' ')
+        ai._voir[i] = ai._voir[i].split(' ')
+        i += 1
+
+def     findItem(ai, item):
+    find = False
+    position = 0
+    for c in ai._voir:
+        for i in c:
+            if i == item:
+                find = True
+                break
+        if find == True:
+            ai._target = position
+            return True
+        position += 1
+    if find == False:
+        return False
+
+def     connectNumber(ai):
+    ai._socket.sendall("voir\n")
+    serverOutput = ai._socket.recv(256)
+    ai._connected = int(serverOutput)
+
+def     move(ai, times):
+    if times == 0:
+        return times
+    else:
+        avance(ai)
+        return move(ai, times - 1)
+
+def     loop(ai):
+    iterator = 0
+    voir(ai)
+    while ai._level != 8:
+        while canLevelUp(ai) == False:
+            while findItem(ai, tStones[ai._level - 1][iterator]) == False:
+                voir(ai)
+                avance(ai)
+            goToTarget(ai)
+            prend(ai, tStones[ai._level - 1][iterator])
+            iterator += 1
+            if iterator >= len(tStones[ai._level - 1]):
+                iterator = 0
+        emptyPosition(ai)
+        for stone in tStones[ai._level - 1]:
+            pose(ai, stone)
+        broadcast(ai, "incantation")
+        #while countPlayers(ai) == False:
+           # broadcast(ai, "find")
+        incantation(ai)
+
+def     connectionToServer(team, port, host):
+    ai = trantorien(team)
+    ai._socket.connect((host, port))
+    serverOutput = ai._socket.recv(128)
+    ai._socket.sendall(team)
+    serverOutput = ai._socket.recv(128)
+    serverOutput = ai._socket.recv(128)
+    loop(ai)
+    ai._socket.close()
+
+def     main(argv):
+    team = argv[1] + "\n"
+    port = int(argv[3])
+    host = argv[5]
+    connectionToServer(team, port, host)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

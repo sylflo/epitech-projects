@@ -1,0 +1,17 @@
+/*
+** write_server.c for  in /home/chatea_s/PSU_2013_zappy
+**
+** Made by
+** Login   <chatea_s@epitech.net>
+**
+** Started on  Sun Jul 13 23:07:00 2014
+** Last update Sun Jul 13 23:07:20 2014 
+*/
+
+void	write_begin(t_server *server)
+{
+  printf("Listening on port %d..\n", server->ln.port);
+  printf("Configuration : Max(%d) WorldX(%d) WorldY(%d) T(%d)\n",
+	 server->ln.allow_client, server->ln.width, server->ln.height,
+	 server->ln.delay);
+}

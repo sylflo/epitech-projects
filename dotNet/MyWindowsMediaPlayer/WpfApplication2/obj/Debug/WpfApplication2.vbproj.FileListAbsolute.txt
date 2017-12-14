@@ -1,0 +1,14 @@
+c:\users\duboy_m\documents\visual studio 2013\Projects\WpfApplication2\WpfApplication2\bin\Debug\WpfApplication2.exe.config
+c:\users\duboy_m\documents\visual studio 2013\Projects\WpfApplication2\WpfApplication2\bin\Debug\WpfApplication2.exe
+c:\users\duboy_m\documents\visual studio 2013\Projects\WpfApplication2\WpfApplication2\bin\Debug\WpfApplication2.pdb
+c:\users\duboy_m\documents\visual studio 2013\Projects\WpfApplication2\WpfApplication2\bin\Debug\WpfApplication2.xml
+c:\users\duboy_m\documents\visual studio 2013\Projects\WpfApplication2\WpfApplication2\obj\Debug\MainWindow.baml
+c:\users\duboy_m\documents\visual studio 2013\Projects\WpfApplication2\WpfApplication2\obj\Debug\MainWindow.g.vb
+c:\users\duboy_m\documents\visual studio 2013\Projects\WpfApplication2\WpfApplication2\obj\Debug\Application.g.vb
+c:\users\duboy_m\documents\visual studio 2013\Projects\WpfApplication2\WpfApplication2\obj\Debug\WpfApplication2_MarkupCompile.cache
+c:\users\duboy_m\documents\visual studio 2013\Projects\WpfApplication2\WpfApplication2\obj\Debug\WpfApplication2.g.resources
+c:\users\duboy_m\documents\visual studio 2013\Projects\WpfApplication2\WpfApplication2\obj\Debug\WpfApplication2.Resources.resources
+c:\users\duboy_m\documents\visual studio 2013\Projects\WpfApplication2\WpfApplication2\obj\Debug\WpfApplication2.vbproj.GenerateResource.Cache
+c:\users\duboy_m\documents\visual studio 2013\Projects\WpfApplication2\WpfApplication2\obj\Debug\WpfApplication2.exe
+c:\users\duboy_m\documents\visual studio 2013\Projects\WpfApplication2\WpfApplication2\obj\Debug\WpfApplication2.xml
+c:\users\duboy_m\documents\visual studio 2013\Projects\WpfApplication2\WpfApplication2\obj\Debug\WpfApplication2.pdb

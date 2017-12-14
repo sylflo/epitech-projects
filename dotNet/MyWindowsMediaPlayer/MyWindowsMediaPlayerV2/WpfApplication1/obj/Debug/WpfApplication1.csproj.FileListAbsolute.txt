@@ -1,0 +1,5 @@
+c:\users\kek\documents\visual studio 2013\Projects\MyWindowsMediaPlayerV2\WpfApplication1\bin\Debug\WpfApplication1.exe.config
+C:\Users\kek\Documents\GitHub\csharp\MyWindowsMediaPlayerV2\WpfApplication1\bin\Debug\WpfApplication1.exe.config
+C:\Users\kek\Documents\GitHub\csharp\MyWindowsMediaPlayerV2\WpfApplication1\obj\Debug\WpfApplication1.csprojResolveAssemblyReference.cache
+C:\Users\kek\Documents\GitHub\csharp\MyWindowsMediaPlayerV2\WpfApplication1\obj\Debug\App.g.cs
+C:\Users\kek\Documents\GitHub\csharp\MyWindowsMediaPlayerV2\WpfApplication1\obj\Debug\WpfApplication1_MarkupCompile.cache

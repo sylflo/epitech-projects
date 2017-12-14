@@ -1,0 +1,66 @@
+#!/usr/bin/perl -w
+
+use	diagnostics;
+use	operations;
+use	construct;
+use	QtCore4;
+use	QtGui4;
+
+use	Scalar::Util qw(looks_like_number);
+
+my $ARGC = @ARGV;
+my $app = Qt::Application(\@ARGV);
+
+if ($ARGC != 6)
+{
+    print "Veuillez entrer les 6 arguments necessaires.\nUSAGE : ./201yams d1 d2 d3 d4 d5 combinaison\n";
+    exit;
+}
+
+if ($ARGC == 6)
+{
+    my	@tmp = split(/_/, $ARGV[5]);
+    
+    if ((@tmp == 2 && $tmp[0] ne "full")  || (@tmp == 3 && $tmp[0] eq "full"))
+    {
+	if (($tmp[0] eq "yams" || $tmp[0] eq "carre" ||
+	     $tmp[0] eq "suite" || $tmp[0] eq "full" ||
+	     $tmp[0] eq "paire" || $tmp[0] eq "brelan") &&
+	    looks_like_number($tmp[1])  &&
+	    ($tmp[1] >= 0 && $tmp[1] <= 6))
+	{
+	    my $yams;
+	    if (@tmp == 3)
+	    {
+		if (looks_like_number($tmp[2]) && ($tmp[2] >= 0 && $tmp[2] <= 6))
+		{
+		    $yams = _yams->new($ARGV[0], $ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4], $tmp[0], $tmp[1], $tmp[2], $app);
+		    $yams->CallOperations();
+		    exit $app->exec();
+		}
+		
+		else
+		{
+		    print("Combinaison mal formatee.\n");
+		}
+	    }
+	    
+	    else
+	    {
+		$yams = _yams->new($ARGV[0], $ARGV[1], $ARGV[2], $ARGV[3], $ARGV[4], $tmp[0], $tmp[1], -1, $app);
+		$yams->CallOperations();
+		exit $app->exec();
+	    }
+	}
+	
+	else
+	{
+	    print ("Combinaison mal formatee.\n");
+	}
+    }
+
+    else
+    {
+	print ("Combinaison mal formatee.\n");
+    }
+}

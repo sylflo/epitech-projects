@@ -1,0 +1,132 @@
+#!/usr/bin/python2.7
+# -*- coding: utf-8 -*-
+
+import sys
+import time
+import os
+import plotly
+import urllib2, StringIO, csv
+from math import *
+
+def year_gen():
+ _list = []
+ j = 1961
+ while j != 2012:
+  _list.append(j)
+  j += 1
+ return _list
+
+def calci(one, two, year):
+ _list = []
+ for row in year:
+  _list.append(one * row + two)
+ return _list
+
+def second(name, data):
+ i = 0
+ xsum = 0
+ ysum = 0
+ xysum = 0
+ xxsum = 0
+ ymoyenne = 0
+ year = []
+ year = year_gen()
+ while (i != 51):
+  if (data[i] > 0):
+   xsum = xsum + year[i]
+   ysum = ysum + data[i]
+   xysum = xysum + year[i] * data[i]
+   xxsum = xsum + year[i] * year[i]
+  i += 1
+ ymoyenne = ysum / i
+ a = (i * xysum - xsum * ysum) / (i * xxsum - xsum * xsum)
+ b = (ysum * xxsum - xsum * xysum) / (i * xxsum - xsum * xsum)
+ print ""
+ print ""
+ print "Fin"
+ print "A est égale a : " + str(a)
+ print "B est égale a : " + str(b)
+
+def do_next(name, data):
+ i = 0
+ year = []
+ year = year_gen()
+ a_year = sum(year) / float(len(year))
+ a_data = sum(data) / float(len(data))
+ list_1 = []
+ list_2 = []
+ list_3 = []
+ list_4 = []
+ lol = []
+ a = 0
+ b = 0 
+ for row1 in data:
+  list_2.append(row1 - a_data)
+ for row2 in year:
+  list_1.append(row2 - a_year)
+  list_4.append((row2 - a_year) * (row2 - a_year))
+ while i != len(year):
+  list_3.append(list_1[i] * list_2[i])
+  i += 1
+ arg1 = sum(list_3)
+ arg2 = sum(list_4)
+ a = (arg1 / arg2) / 1000000
+ b = (a_data - ((arg1 / arg2) * a_year)) / 1000000
+ lol = calci(a, b, year)
+ for row in lol:
+  print "Lol esgal : " + str(row)
+ res_fin = []
+ i_fin = 1960
+ while i_fin != 2051:
+  res_fin.append(((a * i_fin + b) - (sum(lol))) * (((a * i_fin + b) - (sum(lol)))))
+  i_fin += 1
+ print "La sum est : " + str(sum(res_fin) / len(res_fin))
+ print "Le A est : " + str(round(a, 2))
+ print "Le B est : " + str(round(b, 2))
+ print "Estsimation de la population en 2050 : " + str(round(a * 2050 + b, 2))
+ second(name, data)
+ #draw(data, list_2, year)
+
+def draw(rando, list_1, list_2):
+ py = plotly.plotly("Tagzz", "4kvzf56hpt")
+ py.plot(list_2, list_1)
+ py.plot(list_2, rando)
+
+def epur_tab(data):
+ fuk = []
+ re = csv.reader(data[0])
+ re.next();
+ re.next();
+ for row in re:
+  row = str(row)
+  row = row.replace("[", "")
+  row = row.replace("'", "")
+  row = row.replace("]", "")
+  row = int(row)
+  fuk.append(row)
+ return fuk
+
+def do_stuff():
+    mem = "toto"
+    name = []
+    data = []
+    c = csv.reader(open("./test.csv", "rb"), delimiter=';')
+    print "Pays : "
+    for row in c:
+        for argiv in sys.argv:
+            for col in row:
+                if col == argiv:
+                    print mem
+                    name.append(mem)
+                    data.append(row)
+                mem = col
+    data = epur_tab(data)
+    do_next(name, data)
+
+def parse():
+ if len(sys.argv) < 2:
+  print "Mauvais nombre d'arguments"
+ else:
+  do_stuff()
+
+parse()

@@ -1,0 +1,26 @@
+#!/usr/bin/python3
+
+import error
+import algo
+import sys
+
+str_proba = error.check_error()
+name = str_proba.split('_')
+if name[0] == "full":
+    name, nb_1, nb_2 = str_proba.split('_')
+    calcul = algo.Algo(nb_1, sys.argv[1:6], nb_2)
+    calcul.full()
+
+else:
+    name, nb_1 = str_proba.split('_')
+    calcul = algo.Algo(nb_1, sys.argv[1:6])
+    if name == "yams":
+        calcul.yams()
+    elif name == "paire":
+        calcul.paire()
+    elif name == "brelan":
+        calcul.brelan()
+    elif name == "carre":
+        calcul.carre()
+
+

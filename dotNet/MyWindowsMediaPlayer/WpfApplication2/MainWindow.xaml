@@ -1,0 +1,39 @@
+﻿<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="MainWindow"
+    Title="MediaPlayer42" Height="420.053" Width="569.454" Loaded="Window_Loaded">
+    <DockPanel Background="Black" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="Open" Click="MenuItem_Click_Open"/>
+                <MenuItem Header="Exit" Click="MenuItem_Click_Close"/>
+            </MenuItem>
+            <MenuItem Header="Playlist">
+                <MenuItem Header="Open playlist"/>
+            </MenuItem>
+        </Menu>
+        <TextBlock DockPanel.Dock="Bottom" Background="LightGray"><InlineUIContainer>
+        		<Button Margin="15" Click="Button_Click" Content="Play"/>
+        	</InlineUIContainer><Run Text=" "/>
+            <InlineUIContainer>
+        		<Button Margin="15" Click="Button_Click_1" Content="Pause"/>
+        	</InlineUIContainer><Run Text=" "/><InlineUIContainer>
+        		<Button Margin="15" Click="Button_Click_2" Content="Select File"/>
+        	</InlineUIContainer><Run Text=" "/><InlineUIContainer>
+        		<Slider x:Name="Volume" MouseMove="Volume_MouseMove" Maximum="100" Value="100" Width="100" Margin="15" />
+        	</InlineUIContainer>
+            <CheckBox Margin="15" Content="Repeat" Name="Rep"/>
+        </TextBlock>
+        <TextBlock DockPanel.Dock="Bottom" Background="LightGray">
+            <Label Name="Play_Time"></Label>
+            <Slider Name="Progress_Time" PreviewMouseDown="Progress_Time_PreviewMouseDown" PreviewMouseUp="Progress_Time_PreviewMouseUp" TickPlacement="TopLeft" TickFrequency="0" Margin="0" Width="420"/>
+        </TextBlock>
+        <TextBlock DockPanel.Dock="Right" Background="LightGray"><InlineUIContainer>
+        		<ListView x:Name="Lili" Height="191" Width="102"/>
+        	</InlineUIContainer></TextBlock>
+        <TextBlock>
+            <MediaElement x:Name="Toto" LoadedBehavior="Manual" UnloadedBehavior="Stop" MediaEnded="Toto_MediaEnded" ScrubbingEnabled="True"/>
+        </TextBlock>
+    </DockPanel>
+</Window>

@@ -1,0 +1,276 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import time
+import socket
+import argparse
+from trantorien import *
+from itertools import izip, cycle
+
+def     checkServerOutput(ai, serverOutput="", command=None):
+    if not ai._socket:
+        ai._socket.close()
+        sys.exit(1)
+    serverOutput = ai._socket.recv(2048)[:-1]
+    if serverOutput == "ok":
+        return True
+    elif serverOutput == "ko":
+        return True
+    elif serverOutput == "mort":
+        ai._socket.close()
+        sys.exit(1)
+    elif serverOutput[0:8] == "message":
+        serverOutput = serverOutput[8:].split(",")
+        if serverOutput[1] == " incantation " + str(ai._level + 1):
+            ai._stop = 2
+            ai._stop = True
+            return "incantation"
+        elif serverOutput[1] == " find":
+            ai._stop = 1
+            return "find"
+    else:
+        return False
+
+def     commandCaller(ai, command, item = None):
+    if item:
+        ai._socket.sendall(command + " " + item + "\n")
+        check = checkServerOutput(ai)
+        if check == "incantation" or check == "find":
+            return False
+    else:
+        ai._socket.sendall(command + "\n")
+        check = checkServerOutput(ai)
+        if check == "incantation" or check == "find":
+            return False
+
+def     encryption(ai, data, key):
+    return "".join(chr(ord(x) ^ ord(y)) for (x,y) in izip(data, cycle(key)))
+
+def     broadcast(ai, command=None):
+    if command:
+        ai._socket.sendall("broadcast " + ai._messages[command] + "\n")
+        checkServerOutput(ai)
+    else:
+        ai._socket.sendall("broadcast incantation " + str(ai._level + 1) + "\n")
+        checkServerOutput(ai)
+
+def     incantation(ai):
+    ai._socket.sendall("incantation\n")
+    serverOutput = ai._socket.recv(2048)[:-1]
+    if serverOutput == "mort":
+        ai._socket.close()
+        sys.exit(1)
+    while True:
+        serverOutput = ai._socket.recv(2048)[:-1]
+        if serverOutput[:len("niveau")] == "niveau":
+            break
+        if serverOutput == "mort":
+            ai._socket.close()
+            sys.exit(1)
+    ai._level += 1
+    return True
+
+def     voir(ai):
+    i = 0
+    ai._socket.sendall("voir\n")
+    serverOutput = ai._socket.recv(4096)[:-1]
+    while serverOutput[0] != "{" and serverOutput[-1] != "}":
+        if serverOutput == "mort":
+            ai._socket.close()
+            sys.exit(1)
+        serverOutput = ai._socket.recv(2048)[:-1]
+    ai._voir = serverOutput.strip('{}').split(',')
+    while i < len(ai._voir):
+        ai._voir[i] = ai._voir[i].strip(' ')
+        ai._voir[i] = ai._voir[i].split(' ')
+        i += 1
+
+def     inventaire(ai):
+    iterator = 0
+    ai._socket.sendall("inventaire\n")
+    serverOutput = ai._socket.recv(2048)[:-1]
+    while serverOutput[0] != "{" and serverOutput[-1] != "}":
+        if serverOutput == "mort":
+            ai._socket.close()
+            sys.exit(1)
+        serverOutput = ai._socket.recv(2048)[:-1]
+    ai._inventory = serverOutput.strip("{}").replace(",", " ").split(" ")
+    while iterator < len(ai._inventory):
+        if iterator % 2 == 1:
+            try:
+                ai._inventory[iterator] = int(ai._inventory[iterator])
+            except:
+                return False
+        iterator += 1
+
+def     countPlayers(ai):
+    voir(ai)
+    nbPlayers = 0
+    for p in ai._voir[0]:
+        if p == "joueur":
+            nbPlayers += 1
+    if nbPlayers == tLevel[ai._level + 1]:
+        return True
+    else:
+        return False
+
+def     emptyPosition(ai):
+    voir(ai)
+    for c in ai._voir[0]:
+            if c != "joueur":
+                commandCaller(ai, "prend", c)
+
+def     canLevelUp(ai):
+    inventaire(ai)
+    if ai._level == 1 and ai._inventory[3] >= 1:
+        return True
+    if ai._level == 2 and ai._inventory[3] >= 2 and ai._inventory[5] >= 1 and ai._inventory[7] >= 1:
+        return True
+    if ai._level == 3 and ai._inventory[3] >= 2 and ai._inventory[7] >= 1 and ai._inventory[11] >= 2:
+        return True
+    if ai._level == 4 and ai._inventory[3] >= 1 and ai._inventory[5] >= 1 and ai._inventory[7] >= 2 and ai._inventory[11] >= 1:
+        return True
+    if ai._level == 5 and ai._inventory[3] >= 1 and ai._inventory[5] >= 2 and ai._inventory[7] >= 1 and ai._inventory[9] >= 3:
+        return True
+    if ai._level == 6 and ai._inventory[3] >= 1 and ai._inventory[5] >= 2 and ai._inventory[7] >= 3 and ai._inventory[11] >= 1:
+        return True
+    if ai._level == 7 and ai._inventory[3] >= 2 and ai._inventory[5] >= 2 and ai._inventory[7] >= 2 and ai._inventory[9] >= 2 and ai._inventory[5] >= 2 and ai._inventory[6] >= 1:
+        return True
+    return False
+
+def     goToTarget(ai):
+    closest = min(tCenterCases, key=lambda x:abs(x - ai._target))
+    position = tCenterCases.index(closest)
+    if ai._target <= tCenterCases[position] + position and \
+       ai._target >= tCenterCases[position] - position:
+        closest = tCenterCases[position]
+    elif abs(closest - ai._target) > position:
+        position += 1
+        closest = tCenterCases[position]
+    elif abs(closest - ai._target) < tCenterCases[position]:
+        position += 1
+        closest = tCenterCases[position]
+    move(ai, position)
+    if ai._target > tCenterCases[position]:
+        commandCaller(ai, "droite")
+    elif ai._target < tCenterCases[position]:
+        commandCaller(ai, "gauche")
+    move(ai, abs(ai._target - tCenterCases[position]))
+
+def     findItem(ai, item):
+    found = False
+    position = 0
+    voir(ai)
+    for c in ai._voir:
+        for i in c:
+            if i == item:
+                found = True
+                break
+        if found == True:
+            ai._target = position
+            return True
+        position += 1
+    if found == False:
+        ai._target = -1
+        return False
+
+def     connectNumber(ai):
+    ai._socket.sendall("voir\n")
+    serverOutput = ai._socket.recv(2048)[:-1]
+    ai._connected = int(serverOutput)
+
+def     move(ai, times):
+    if times == 0:
+        return times
+    else:
+        commandCaller(ai, "avance")
+        return move(ai, times - 1)
+
+def     wait(ai):
+    while True:
+        serverOutput = ai._socket.recv(2048)[:-1]
+        if serverOutput[:14] == "niveau actuel":
+            break
+
+def     leveling(ai):
+    if tLevel[ai._level - 1] > 1:
+        ai._stop = 2
+        broadcast(ai)
+        if ai._stop == 2:
+            while countPlayers(ai) == False:
+                while True:
+                    serverOutput = ai._socket.recv(2048)[:-1]
+                    if serverOutput == "mort":
+                        ai._socket.close()
+                        sys.exit(1)
+                    elif serverOutput[0:8] == "message":
+                        serverOutput = serverOutput[8:].replace(",", "").split(" ")
+                        ai._target = int(serverOutput[1])
+                        break
+                    else:
+                        continue
+                goToTarget(ai)
+            voir(ai)
+            wait(ai)
+        else:
+            while countPlayers(ai) == False:
+                broadcast(ai, "find")
+                checkServerOutput(ai)
+            emptyPosition(ai)
+            for stone in tStones[ai._level - 1]:
+                commandCaller(ai, "pose", stone)
+            incantation(ai)
+            voir(ai)
+    else:
+        emptyPosition(ai)
+        for stone in tStones[ai._level - 1]:
+            commandCaller(ai, "pose", stone)
+        incantation(ai)
+        voir(ai)
+
+def     loop(ai):
+    iterator = 0
+    voir(ai)
+    while True:
+        while canLevelUp(ai) == False:
+            if ai._inventory[1] < 5:
+                obj = "nourriture"
+            else:
+                obj = tStones[ai._level - 1][iterator]
+            while findItem(ai, obj) == False:
+                commandCaller(ai, "avance")
+            voir(ai)
+            if ai._target != 0:
+                goToTarget(ai)
+            commandCaller(ai, "prend", obj)
+            iterator += 1
+            if iterator == len(tStones[ai._level - 1]):
+                iterator = 0
+        leveling(ai)
+        ai._stop = 0
+        if ai._level == 8:
+            break
+
+def     connectionToServer(team, port, host):
+    ai = trantorien(team)
+    ai._socket.connect((host, port))
+    serverOutput = ai._socket.recv(2048)[:-1]
+    ai._socket.sendall(team)
+    serverOutput = ai._socket.recv(2048)[:-1]
+    serverOutput = ai._socket.recv(2048)[:-1]
+    loop(ai)
+    ai._socket.close()
+    sys.exit(1)
+
+def     main(argv):
+    if len(argv) != 6 or argv[0] != "-n" or argv[2] != "-p" or argv[4] != "-h":
+        print "Usage: ./AI -n [team name] -p [server port] -h [server address]"
+        sys.exit(1)
+    team = argv[1] + "\n"
+    port = int(argv[3])
+    host = argv[5]
+    connectionToServer(team, port, host)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

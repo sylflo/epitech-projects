@@ -1,0 +1,145 @@
+#!/usr/bin/python2.7
+# -*- coding: utf-8 -*-
+
+import sys
+import math
+import time
+import matplotlib.pyplot as plt
+
+def parsing_one():
+    if len(sys.argv) > 3:
+        print("Please enter 1 or 2 arguments")
+        sys.exit();
+    if sys.argv[1].isdigit() == False:
+        print("Please enter number for argument")
+        sys.exit();
+    if sys.argv[2].isdigit() == False:
+        print("Please enter a number for argument")
+        sys.exit();
+    k = int(sys.argv[1])
+    n = int(sys.argv[2])
+    if n < 0:
+        print("The second argument must be a positive int");
+        sys.exit();
+    if  k < 0 or k > n:
+        print("The first argument must be a positive int and inferior or equal to the second");
+        sys.exit();
+    return n, k
+
+def parsing():
+    if len(sys.argv) > 2:
+        print("Plesase enter 1 or 2 argument")
+        sys.exit();
+    if sys.argv[1].isdigit() == False:
+        print("Please enter a number for argument and negative")
+        sys.exit();
+    time = int(sys.argv[1])
+    if time < 0 or time > 8 * 3600:
+        print("The argument must be inferior to 8h");
+        sys.exit();
+    return time
+
+def coefficient(n, k):
+    if k > n // 2:
+        k = n - k
+    x = 1
+    y = 1
+    i = n - k + 1
+    while i <=n:
+        x = (x * i) // y
+        y += 1
+        i += 1
+    return x
+
+def encombrement_law_bin(time_binomial):
+    i = 0;
+    sum = 0;
+    tps1  = time.clock()
+    while i < 26:
+        comb = coefficient(3500, i) 
+        p = float(time_binomial) / float(8 * 3600)
+        result = float(comb) * float(pow(p, i)) * float(pow(1 - p, 3500 - i))
+        sum += result
+        i += 1
+    sum = (1 - sum) * 100
+    tps2 = time.clock();
+    print "\t\t" + "temps de calcul:\t   ",
+    print str((tps2 - tps1) * 1000) + " ms"
+    return sum;
+
+def list_binomial(time):
+    list = []
+    i = 0;
+    max = 0;
+    while i < 50:
+        comb = coefficient(3500, i) 
+        p = float(time) / float(8 * 3600)
+        result = float(comb) * float(pow(p, i)) * float(pow(1 - p, 3500 - i))
+        if result > max:
+            max = result
+        list.append(result)
+        i += 1
+    return list, max
+
+
+def poisson(k,m):
+    p=math.e**(-m)
+    for i in range(0,k):
+        p*=m/k
+        k-=1
+    return p
+
+def encombrement_law_poisson(time_poisson):
+    k = 0
+    sum = 0
+    tps1 = time.clock()
+    m = (float(3500) * float(sys.argv[1])) / (8 * 3600)
+    while k < 26:
+        result = poisson(k, m)
+        sum += result
+        k += 1
+    tps2 = time.clock();
+    print "\t\ttemps de calcul:\t    " + str(((tps2 - tps1) * 1000)) + " ms"
+    print "\t\tprobabilite d'encombrement: " +  str(round((1 - sum) * 100, 1)) + "%"
+         
+def list_fish_law(time_binomial):
+    list = []
+    k = 0
+    m = (float(3500) * float(sys.argv[1])) / (8 * 3600)
+    while k < 50:
+        result = poisson(k, m)
+        list.append(result)
+        k += 1
+    return list;
+
+if len(sys.argv) == 3:
+    n, k = parsing_one()
+    print "combinaison de", k, "parmi", n, ":",
+    print(coefficient(n, k))
+elif len(sys.argv) == 2:
+    time_binomial = parsing()
+    print "loi binomiale:"
+    print "\t\t" + "probabilite d'encombrement: " + str(abs(round(encombrement_law_bin(time_binomial), 1))) + "%"
+    print "loi de Poisson:"
+    encombrement_law_poisson(time_binomial)
+    list_bin, max = list_binomial(time_binomial)
+    list_law = list_fish_law(time_binomial)
+    
+    
+    list_x = [];
+    i = 0;
+    while i < 50:
+        list_x.append(i)
+        i += 1
+
+    plt.figure(1)
+    plt.bar(list_x, list_bin, color='b')
+    plt.xlabel("nb d'appels simultanes")
+    plt.ylabel("probabilites")
+
+    plt.figure(2)
+    plt.bar(list_x, list_law, color='r')   
+    plt.xlabel("nb d'appels simultanes")
+    plt.ylabel("probabilites")
+    
+    plt.show()

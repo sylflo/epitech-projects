@@ -1,0 +1,81 @@
+#!/usr/bin/python2.7
+
+import sys
+import fileinput
+import math
+
+def print_206():
+    print("antal malinder :\t"),
+    print int (nb_mesure)
+
+    print("standardafvilgelse :\t"), 
+    print round(ecart_typ, 2)
+
+    print("aritmetisk gennemsnit :\t"),
+    print round(moy_arith, 2)
+
+    print("kvadratisk gennemsnit :\t"),
+    print round(moy_quadr, 2)
+
+    print("harmonisk gennemsnit :\t"),
+    print round(moy_harmo, 2)
+
+    print("\n")
+
+def moy_arithmetique():
+    (moy_arithe) = (float(nb_mesure) * float(moy_arith) + float(new)) / float(nb_mesure + 1)
+    new_moy_arith = moy_arithe
+    return moy_arithe
+
+def var():
+    tmp = (float(sum_square) + float(math.pow(float(new), float(2)))) / float(nb_mesure + 1)
+    tmp = float(tmp) - pow(float(moy_arith), float(2))
+    return float (tmp)
+
+def ec_type():
+    new_ectype = float(var())
+    new_ectype = float(math.sqrt(float(new_ectype)))
+    return new_ectype
+
+def moy_quadra(sum_squaree):
+    tmp = float(sum_squaree) + pow(float(new), 2)
+    tmp2 = (float(tmp) / float(nb_mesure + 1))
+    moy_quadratique = math.sqrt(float(tmp2))
+    return moy_quadratique
+
+def moy_harmon():
+    moy_harmonique = (float(nb_mesure + 1) / ((1 / float(new)) + (float(nb_mesure) / float(moy_harmo))))
+    return moy_harmonique
+
+if len(sys.argv) != 5:
+    print("You have to put 4 arguments")
+    sys.exit()
+
+if sys.argv[1].isdigit() == False or sys.argv[2].isdigit() == False or sys.argv[3].isdigit() == False or sys.argv[4].isdigit() == False:
+    print("The arguments have to be numbers")
+    sys.exit()
+
+nb_mesure = float(sys.argv[1])
+moy_arith = float(sys.argv[2])
+moy_harmo = float(sys.argv[3])
+ecart_typ = float(sys.argv[4])
+new_moy_arith = 0
+moy_quadr = 0
+sum_square = ((math.pow(ecart_typ, 2) + math.pow(moy_arith, 2)) * nb_mesure)
+
+new = ""
+while new != "ende":
+    new = raw_input("indtast din vaerdi : ")
+    if new == "ende":
+        sys.exit();
+    if new.isdigit() == False and new != "ende":
+        print ("You have to put a number or the \"ende\" instruction");
+    else:
+        moy_arith = moy_arithmetique()
+        moy_quadr = moy_quadra(sum_square)
+        moy_harmo = moy_harmon() 
+        ecart_typ = ec_type()
+        nb_mesure += 1;
+        sum_square = ((math.pow(ecart_typ, 2) + math.pow(moy_arith, 2)) * nb_mesure)
+        print_206();
+
